@@ -3,16 +3,20 @@ services:
   reverseproxy:
     build:
       context: ./udagram-reverseproxy
-    image: reverseproxy
+      dockerfile: Dockerfile
+    image: reverseproxy:v4a
   api_user:
     build:
       context: ./udagram-api-user
-    image: udagram-api-user
+      dockerfile: Dockerfile
+    image: udagram-api-user:v4a
   api_feed:
     build:
       context: ./udagram-api-feed
-    image: udagram-api-feed
+      dockerfile: Dockerfile
+    image: udagram-api-feed:v4a
   frontend:
     build:
       context: ./udagram-frontend
+      dockerfile: Dockerfile
     image: udagram-frontend:local
