@@ -1,0 +1,17 @@
+name: Node.js CI
+on:
+  push:
+    branches: [ "ft-CI" ]
+  
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - run: docker-compose -f docker-compose-build.yaml build --parallel
+    - run: docker tag udagram-api-feed evannoelchi/udagram-api-feed:v4a
+    - run: docker tag udagram-api-user evannoelchi/udagram-api-user:v4a
+    - run: docker tag udagram-reverseproxy evannoelchi/udagram-reverseproxy:v4a
+    - run: docker tag udagram-frontend evannoelchi/udagram-frontend:local
