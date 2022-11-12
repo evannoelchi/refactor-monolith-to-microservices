@@ -1,0 +1,87 @@
+#Udagram EKS 
+
+eksctl create cluster --name=eks-udacity \
+                      --region=eu-west-1\
+                      --zones=eu-west-1a,eu-west-1b \
+                      --without-nodegroup 
+
+eksctl utils associate-iam-oidc-provider \
+    --region eu-west-1 \
+    --cluster eks-udacity \
+    --approve
+
+eksctl create nodegroup --cluster=eks-udacity \
+                       --region=eu-west-1 \
+                       --name=eks-udacity-ng-public1 \
+                       --node-type=t3.medium \
+                       --nodes=2 \
+                       --nodes-min=2 \
+                       --nodes-max=4 \
+                       --node-volume-size=20 \
+                       --ssh-access \
+                       --ssh-public-key=kube-key \
+                       --managed \
+                       --asg-access \
+                       --external-dns-access \
+                       --full-ecr-access \
+                       --appmesh-access \
+                       --alb-ingress-access 
+
+# List EKS clusters
+eksctl get cluster
+# List NodeGroups in a cluster
+eksctl get nodegroup --cluster=eks-udacity
+
+#Create or update a kubeconfig file for your cluster
+aws eks update-kubeconfig --region eu-west-1 --name eks-udacity
+
+#Check cluster status
+aws eks describe-cluster --region eu-west-1 --name eks-udacity --query  "cluster.status"
+
+# List Nodes in current kubernetes cluster
+kubectl get nodes -o wide
+
+# Our kubectl context should be automatically changed to new cluster
+kubectl config view --minify
+
+
+# Delete Node Group
+eksctl delete nodegroup --cluster=eks-udacity  --name=eks-udacity-ng-public1 
+
+# Delete Cluster
+eksctl delete cluster eks-udacity
+
+# Deployments
+kubectl apply -f ./kube-configs/aws-secret.yml
+kubectl apply -f ./kube-configs/env-secret.yml 
+kubectl apply -f ./kube-configs/env-configmap.yml
+
+kubectl replace -f ./kube-configs/aws-secret.yml
+kubectl replace -f ./kube-configs/env-secret.yml 
+kubectl replace -f ./kube-configs/env-configmap.yml
+
+kubectl apply -f ./kube-configs/api-feed-deploy.yml
+kubectl apply -f ./kube-configs/api-user-deploy.yml
+kubectl apply -f ./kube-configs/reverseproxy-deploy.yml
+kubectl apply -f ./kube-configs/frontend-deploy.yml
+
+kubectl apply -f ./kube-configs/api-feed-service.yml
+kubectl apply -f ./kube-configs/api-user-service.yml
+kubectl apply -f ./kube-configs/reverseproxy-service.yml
+kubectl apply -f ./kube-configs/frontend-service.yml
+
+#Port forwarding
+kubectl port-forward service/frontend 8100:80
+kubectl port-forward service/reverseproxy 8080:8080
+
+# The command below will ceates an external load balancer and assigns a fixed, external IP to the Service.
+kubectl expose deployment frontend --type=LoadBalancer --name=publicfrontend
+kubectl expose deployment frontend --type=LoadBalancer --name=publicreverseproxy
+
+#
+kubectl set image deployment frontend frontend=evannoelchi/udagram-frontend:v4b
+
+kubectl delete deployment api-feed
+kubectl delete deployment api-user
+kubectl delete deployment reverseproxy
+kubectl delete deployment frontend

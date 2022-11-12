@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: env-config
+data:
+   POSTGRES_HOST: uda-microserv-db.ctgonuhup1bu.eu-west-1.rds.amazonaws.com
+   POSTGRES_DB: postgres
+   AWS_BUCKET: uda-microservices-project
+   AWS_REGION: eu-west-1
+   AWS_PROFILE: default
+   JWT_SECRET: testing
+   URL: http://localhost:8100
+
+
+
+  
