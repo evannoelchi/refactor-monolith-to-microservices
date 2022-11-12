@@ -1,7 +1,7 @@
 name: Node.js CI
 on:
   push:
-    branches: [ "ft-CI" ]
+    branches: [ "ft-CD" ]
   
 jobs:
   build:
