@@ -29,7 +29,6 @@ eksctl create nodegroup --cluster=eks-udacity \
 
 # List EKS clusters
 eksctl get cluster
-
 # List NodeGroups in a cluster
 eksctl get nodegroup --cluster=eks-udacity
 
@@ -53,13 +52,36 @@ eksctl delete nodegroup --cluster=eks-udacity  --name=eks-udacity-ng-public1
 eksctl delete cluster eks-udacity
 
 # Deployments
-kubectl apply -f ./kube-config/aws-secret.yml
+kubectl apply -f ./kube-configs/aws-secret.yml
 kubectl apply -f ./kube-configs/env-secret.yml 
 kubectl apply -f ./kube-configs/env-configmap.yml
 
-kubectl replace -f ./kube-config/aws-secret.yml
+kubectl replace -f ./kube-configs/aws-secret.yml
 kubectl replace -f ./kube-configs/env-secret.yml 
 kubectl replace -f ./kube-configs/env-configmap.yml
 
 kubectl apply -f ./kube-configs/api-feed-deploy.yml
 kubectl apply -f ./kube-configs/api-user-deploy.yml
+kubectl apply -f ./kube-configs/reverseproxy-deploy.yml
+kubectl apply -f ./kube-configs/frontend-deploy.yml
+
+kubectl apply -f ./kube-configs/api-feed-service.yml
+kubectl apply -f ./kube-configs/api-user-service.yml
+kubectl apply -f ./kube-configs/reverseproxy-service.yml
+kubectl apply -f ./kube-configs/frontend-service.yml
+
+#Port forwarding
+kubectl port-forward service/frontend 8100:80
+kubectl port-forward service/reverseproxy 8080:8080
+
+# The command below will ceates an external load balancer and assigns a fixed, external IP to the Service.
+kubectl expose deployment frontend --type=LoadBalancer --name=publicfrontend
+kubectl expose deployment frontend --type=LoadBalancer --name=publicreverseproxy
+
+#
+kubectl set image deployment frontend frontend=evannoelchi/udagram-frontend:v4b
+
+kubectl delete deployment api-feed
+kubectl delete deployment api-user
+kubectl delete deployment reverseproxy
+kubectl delete deployment frontend
